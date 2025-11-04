@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  iOSCarFuture
+//  CarFuture
 //
 //  Created by THIERRY-BELLEFOND Melvyn on 04/11/2025.
 //
@@ -17,8 +17,4 @@ struct ContentView: View {
         }
         .padding()
     }
-}
-
-#Preview {
-    ContentView()
 }
