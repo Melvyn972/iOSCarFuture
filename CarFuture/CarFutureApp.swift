@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import SwiftUI
+
 @main
 struct CarFutureApp: App {
     @StateObject private var store = GarageStore()
@@ -15,6 +17,10 @@ struct CarFutureApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(store)
+                .environment(\.locale, .init(identifier: "fr"))
+                .tint(.indigo)
         }
     }
 }
+
+

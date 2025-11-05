@@ -12,40 +12,45 @@ public struct VehicleCard: View {
     private let heroImage: Image?
     private let statLeft: (String, String)
     private let statRight: (String, String)
+    private let showHero: Bool
 
     public init(
         vehicleName: String,
         subtitle: String,
         heroImage: Image?,
         statLeft: (String, String),
-        statRight: (String, String)
+        statRight: (String, String),
+        showHero: Bool = true
     ) {
         self.vehicleName = vehicleName
         self.subtitle = subtitle
         self.heroImage = heroImage
         self.statLeft = statLeft
         self.statRight = statRight
+        self.showHero = showHero
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: Theme.cornerRadius)
-                    .fill(.ultraThinMaterial)
-                if let heroImage {
-                    heroImage
-                        .resizable()
-                        .scaledToFill()
-                } else {
-                    Image(systemName: "car.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .padding(24)
-                        .foregroundStyle(.secondary)
+            if showHero {
+                ZStack {
+                    RoundedRectangle(cornerRadius: Theme.cornerRadius)
+                        .fill(.ultraThinMaterial)
+                    if let heroImage {
+                        heroImage
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Image(systemName: "car.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(24)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .frame(height: 110)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
             }
-            .frame(height: 110)
-            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerRadius))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(vehicleName)

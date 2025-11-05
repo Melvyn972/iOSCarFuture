@@ -5,12 +5,14 @@
 //  Created by THIERRY-BELLEFOND Melvyn on 04/11/2025.
 //
 import SwiftUI
+import PhotosUI
 import CarFuturePackage
 
 struct GarageView: View {
     @EnvironmentObject private var store: GarageStore
     @State private var showAdd = false
     @State private var searchText = ""
+    @State private var editing: Vehicle? = nil
 
     var filtered: [Vehicle] {
         guard !searchText.isEmpty else { return store.vehicles }
@@ -36,12 +38,28 @@ struct GarageView: View {
                             )
                             .contentShape(Rectangle())
                         }
+                        .contextMenu {
+                            Button {
+                                editing = v
+                            } label: {
+                                Label("Modifier", systemImage: "pencil")
+                            }
+                            Button(role: .destructive) {
+                                if let idx = store.vehicles.firstIndex(where: { $0.id == v.id }) {
+                                    store.deleteVehicles(at: IndexSet(integer: idx))
+                                }
+                            } label: {
+                                Label("Supprimer", systemImage: "trash")
+                            }
+                        }
                     }
                 }
                 .padding()
             }
             .navigationTitle("Mon Garage")
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .searchable(text: $searchText,
+                        placement: .navigationBarDrawer(displayMode: .always),
+                        prompt: "Rechercher un véhicule")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     StyledButton(title: "Ajouter", systemImage: "plus") {
@@ -53,6 +71,12 @@ struct GarageView: View {
             .sheet(isPresented: $showAdd) {
                 AddVehicleView()
                     .presentationDetents([.medium, .large])
+            }
+            .sheet(item: $editing) { item in
+                VehicleEditorView(vehicle: item) { updated in
+                    store.updateVehicle(updated)
+                }
+                .presentationDetents([.large])
             }
         }
     }

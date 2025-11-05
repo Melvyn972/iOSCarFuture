@@ -31,6 +31,12 @@ final class GarageStore: ObservableObject {
         withAnimation { vehicles[idx].wishlist.append(part) }
     }
 
+    func updatePart(_ part: PartItem, vehicleID: UUID) {
+        guard let vIdx = vehicles.firstIndex(where: { $0.id == vehicleID }) else { return }
+        guard let pIdx = vehicles[vIdx].wishlist.firstIndex(where: { $0.id == part.id }) else { return }
+        withAnimation { vehicles[vIdx].wishlist[pIdx] = part }
+    }
+
     func deletePart(at offsets: IndexSet, vehicleID: UUID) {
         guard let idx = vehicles.firstIndex(where: { $0.id == vehicleID }) else { return }
         withAnimation { vehicles[idx].wishlist.remove(atOffsets: offsets) }
@@ -38,6 +44,11 @@ final class GarageStore: ObservableObject {
 
     func addVehicleToBuy(_ v: VehicleToBuy) {
         withAnimation { toBuy.append(v) }
+    }
+
+    func updateVehicleToBuy(_ v: VehicleToBuy) {
+        guard let idx = toBuy.firstIndex(where: { $0.id == v.id }) else { return }
+        withAnimation { toBuy[idx] = v }
     }
 
     func deleteToBuy(at offsets: IndexSet) {

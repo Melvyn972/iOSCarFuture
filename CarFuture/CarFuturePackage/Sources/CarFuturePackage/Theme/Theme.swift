@@ -10,14 +10,9 @@ public enum Theme {
     public static let cornerRadius: CGFloat = 14
     public static let cardPadding: CGFloat = 12
 
-    public static var gradient: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.accentColor.opacity(0.85),
-                Color.accentColor.opacity(0.55)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
+    public static let gradient: LinearGradient = LinearGradient(
+        colors: [Color.indigo, Color.purple],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
 }

@@ -10,11 +10,21 @@ import CarFuturePackage
 struct PurchasesView: View {
     @EnvironmentObject private var store: GarageStore
     @State private var showAdd = false
+    @State private var searchText = ""
+    @State private var editing: VehicleToBuy? = nil
+
+    var filtered: [VehicleToBuy] {
+        guard !searchText.isEmpty else { return store.toBuy }
+        return store.toBuy.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText) ||
+            ($0.price?.currencyString ?? "").localizedCaseInsensitiveContains(searchText)
+        }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(store.toBuy) { v in
+                ForEach(filtered) { v in
                     NavigationLink {
                         PurchaseDetailView(item: v)
                     } label: {
@@ -31,10 +41,26 @@ struct PurchasesView: View {
                             .foregroundStyle(.secondary)
                         }
                     }
+                    .swipeActions {
+                        Button {
+                            editing = v
+                        } label: {
+                            Label("Modifier", systemImage: "pencil")
+                        }
+                        .tint(.orange)
+                        Button(role: .destructive) {
+                            if let idx = store.toBuy.firstIndex(where: { $0.id == v.id }) {
+                                store.deleteToBuy(at: IndexSet(integer: idx))
+                            }
+                        } label: {
+                            Label("Supprimer", systemImage: "trash")
+                        }
+                    }
                 }
                 .onDelete(perform: store.deleteToBuy)
             }
             .navigationTitle("À acheter")
+            .searchable(text: $searchText, prompt: "Rechercher une annonce")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     StyledButton(title: "Ajouter", systemImage: "plus") {
@@ -43,99 +69,106 @@ struct PurchasesView: View {
                 }
             }
             .sheet(isPresented: $showAdd) {
-                AddPurchaseView()
-                    .presentationDetents([.medium, .large])
+                PurchaseEditorView { item in
+                    store.addVehicleToBuy(item)
+                }
+                .presentationDetents([.medium, .large])
+            }
+            .sheet(item: $editing) { item in
+                PurchaseEditorView(existing: item) { updated in
+                    store.updateVehicleToBuy(updated)
+                }
+                .presentationDetents([.medium, .large])
             }
         }
     }
 }
 
 private struct PurchaseDetailView: View {
+    @EnvironmentObject private var store: GarageStore
+    @Environment(\.dismiss) private var dismiss
+
     let item: VehicleToBuy
+
+    @State private var editing: VehicleToBuy? = nil
+    @State private var confirmDelete = false
+
+    private var currentItem: VehicleToBuy {
+        store.toBuy.first(where: { $0.id == item.id }) ?? item
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                PhotoGalleryView(images: item.photos.compactMap { $0.image })
+                PhotoGalleryView(images: currentItem.photos.compactMap { $0.image }, height: 320)
+
                 VehicleCard(
-                    vehicleName: item.name,
-                    subtitle: item.type.rawValue,
-                    heroImage: item.photos.first?.image,
-                    statLeft: ("Prix", item.price?.currencyString ?? "-"),
-                    statRight: ("Année", item.characteristics.year.map(String.init) ?? "-")
+                    vehicleName: currentItem.name,
+                    subtitle: currentItem.type.rawValue,
+                    heroImage: currentItem.photos.first?.image,
+                    statLeft: ("Prix", currentItem.price?.currencyString ?? "-"),
+                    statRight: ("Année", currentItem.characteristics.year.map(String.init) ?? "-"),
+                    showHero: false
                 )
                 .padding(.horizontal)
 
                 GroupBox {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Notes").font(.headline)
-                        Text(item.notes.isEmpty ? "—" : item.notes)
+                        Text(currentItem.notes.isEmpty ? "—" : currentItem.notes)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.horizontal)
+
+                if let url = currentItem.listingURL, let u = URL(string: url) {
+                    HStack {
+                        Image(systemName: "link")
+                        Link("Ouvrir l’annonce", destination: u)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
-        .navigationTitle(item.name)
+        .navigationTitle(currentItem.name)
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-private struct AddPurchaseView: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var store: GarageStore
-
-    @State private var name = ""
-    @State private var type: VehicleType = .car
-    @State private var url: String = ""
-    @State private var price: Double?
-    @State private var year: Int?
-    @State private var notes: String = ""
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Informations") {
-                    TextField("Nom", text: $name)
-                    Picker("Type", selection: $type) {
-                        ForEach(VehicleType.allCases) { t in
-                            Text(t.rawValue).tag(t)
-                        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        editing = currentItem
+                    } label: {
+                        Label("Modifier l’annonce", systemImage: "pencil")
                     }
-                    TextField("Lien de l’annonce", text: $url)
-                        .keyboardType(.URL)
-                    TextField("Prix", value: $price, format: .number)
-                        .keyboardType(.decimalPad)
-                    TextField("Année", value: $year, format: .number)
-                        .keyboardType(.numberPad)
+
+                    Button(role: .destructive) {
+                        confirmDelete = true
+                    } label: {
+                        Label("Supprimer", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 100)
+                .accessibilityLabel("Actions")
+            }
+        }
+        .sheet(item: $editing) { it in
+            PurchaseEditorView(existing: it) { updated in
+                store.updateVehicleToBuy(updated)
+            }
+            .presentationDetents([.medium, .large])
+        }
+        .alert("Supprimer cette annonce ?", isPresented: $confirmDelete) {
+            Button("Annuler", role: .cancel) {}
+            Button("Supprimer", role: .destructive) {
+                if let idx = store.toBuy.firstIndex(where: { $0.id == currentItem.id }) {
+                    store.deleteToBuy(at: IndexSet(integer: idx))
+                    dismiss()
                 }
             }
-            .navigationTitle("Ajouter un achat")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Annuler") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Ajouter") {
-                        let item = VehicleToBuy(
-                            type: type,
-                            name: name,
-                            listingURL: url.isEmpty ? nil : url,
-                            price: price,
-                            photos: [],
-                            notes: notes,
-                            characteristics: .init(year: year),
-                            plannedParts: []
-                        )
-                        store.addVehicleToBuy(item)
-                        dismiss()
-                    }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
+        } message: {
+            Text("Cette action est irréversible.")
         }
     }
 }

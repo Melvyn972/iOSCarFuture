@@ -8,13 +8,18 @@ import SwiftUI
 
 public struct PhotoGalleryView: View {
     private let images: [Image]
+    private let height: CGFloat
+    private let horizontalPadding: CGFloat
+    @State private var selection: Int = 0
 
-    public init(images: [Image]) {
+    public init(images: [Image], height: CGFloat = 320, horizontalPadding: CGFloat = 16) {
         self.images = images
+        self.height = height
+        self.horizontalPadding = horizontalPadding
     }
 
     public var body: some View {
-        TabView {
+        TabView(selection: $selection) {
             if images.isEmpty {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16).fill(.ultraThinMaterial)
@@ -25,21 +30,23 @@ public struct PhotoGalleryView: View {
                         Text("Aucune photo").foregroundStyle(.secondary)
                     }
                 }
-                .frame(height: 220)
-                .padding(.horizontal)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .tag(0)
             } else {
-                ForEach(Array(images.enumerated()), id: \.offset) { _, img in
+                ForEach(Array(images.enumerated()), id: \.offset) { idx, img in
                     img
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 220)
+                        .frame(maxWidth: .infinity, minHeight: height, maxHeight: height)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .padding(.horizontal)
+                        .tag(idx)
                         .transition(.opacity.combined(with: .scale))
                 }
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .automatic))
-        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .padding(.horizontal, horizontalPadding)
+        .animation(.easeInOut, value: images.count)
     }
 }

@@ -8,6 +8,7 @@ import SwiftUI
 import CarFuturePackage
 
 struct PartEditorView: View {
+    var existing: PartItem?
     var onSave: (PartItem) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -22,23 +23,36 @@ struct PartEditorView: View {
                     TextField("Nom", text: $name)
                     TextField("Lien (optionnel)", text: $url)
                         .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
                     TextField("Prix", value: $price, format: .number)
                         .keyboardType(.decimalPad)
                 }
             }
-            .navigationTitle("Nouvelle pièce")
+            .navigationTitle(existing == nil ? "Nouvelle pièce" : "Modifier pièce")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Annuler") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Ajouter") {
-                        onSave(.init(name: name,
-                                     url: url.isEmpty ? nil : url,
-                                     price: price ?? 0))
+                    Button(existing == nil ? "Ajouter" : "Enregistrer") {
+                        let item = PartItem(
+                            id: existing?.id ?? UUID(),
+                            name: name,
+                            url: url.isEmpty ? nil : url,
+                            price: price ?? 0
+                        )
+                        onSave(item)
                         dismiss()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .onAppear {
+                if let existing {
+                    name = existing.name
+                    url = existing.url ?? ""
+                    price = existing.price
                 }
             }
         }
