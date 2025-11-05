@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct CarFutureApp: App {
+    @StateObject private var store = GarageStore()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environmentObject(store)
         }
     }
 }

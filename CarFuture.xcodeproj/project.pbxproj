@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		657A0C4A2EBA2E37007C3DA9 /* CarFuturePackage in Frameworks */ = {isa = PBXBuildFile; productRef = 657A0C492EBA2E37007C3DA9 /* CarFuturePackage */; };
+		658DAF922EBB41650045C632 /* CarFuturePackage in Frameworks */ = {isa = PBXBuildFile; productRef = 658DAF912EBB41650045C632 /* CarFuturePackage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -15,7 +15,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		657A0C302EBA2DEA007C3DA9 /* Exceptions for "CarFuture" folder in "CarFuture" target */ = {
+		657A0C7C2EBA4F14007C3DA9 /* Exceptions for "CarFuture" folder in "CarFuture" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				CarFuturePackage,
@@ -28,7 +28,7 @@
 		657A0C232EBA2CB3007C3DA9 /* CarFuture */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				657A0C302EBA2DEA007C3DA9 /* Exceptions for "CarFuture" folder in "CarFuture" target */,
+				657A0C7C2EBA4F14007C3DA9 /* Exceptions for "CarFuture" folder in "CarFuture" target */,
 			);
 			path = CarFuture;
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				657A0C4A2EBA2E37007C3DA9 /* CarFuturePackage in Frameworks */,
+				658DAF922EBB41650045C632 /* CarFuturePackage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,7 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				657A0C232EBA2CB3007C3DA9 /* CarFuture */,
-				657A0C482EBA2E37007C3DA9 /* Frameworks */,
+				658DAF902EBB41650045C632 /* Frameworks */,
 				657A0C222EBA2CB3007C3DA9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,7 +64,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		657A0C482EBA2E37007C3DA9 /* Frameworks */ = {
+		658DAF902EBB41650045C632 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -91,7 +91,7 @@
 			);
 			name = CarFuture;
 			packageProductDependencies = (
-				657A0C492EBA2E37007C3DA9 /* CarFuturePackage */,
+				658DAF912EBB41650045C632 /* CarFuturePackage */,
 			);
 			productName = iOSCarFuture;
 			productReference = 657A0C212EBA2CB3007C3DA9 /* CarFuture.app */;
@@ -349,7 +349,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		657A0C492EBA2E37007C3DA9 /* CarFuturePackage */ = {
+		658DAF912EBB41650045C632 /* CarFuturePackage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CarFuturePackage;
 		};
