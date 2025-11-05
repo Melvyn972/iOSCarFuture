@@ -23,41 +23,41 @@ struct PurchasesView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(filtered) { v in
-                    NavigationLink {
-                        PurchaseDetailView(item: v)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(v.name).font(.headline)
-                            HStack(spacing: 8) {
-                                if let price = v.price {
-                                    Text(price.currencyString)
+            Group {
+                if filtered.isEmpty {
+                    emptyState
+                } else {
+                    List {
+                        ForEach(filtered) { v in
+                            NavigationLink {
+                                PurchaseDetailView(item: v)
+                            } label: {
+                                PurchaseRowCard(v: v)
+                            }
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .swipeActions {
+                                Button {
+                                    editing = v
+                                } label: {
+                                    Label("Modifier", systemImage: "pencil")
                                 }
-                                if let url = v.listingURL, let u = URL(string: url) {
-                                    Link("Annonce", destination: u)
+                                .tint(.orange)
+                                Button(role: .destructive) {
+                                    if let idx = store.toBuy.firstIndex(where: { $0.id == v.id }) {
+                                        store.deleteToBuy(at: IndexSet(integer: idx))
+                                    }
+                                } label: {
+                                    Label("Supprimer", systemImage: "trash")
                                 }
                             }
-                            .foregroundStyle(.secondary)
                         }
+                        .onDelete(perform: store.deleteToBuy)
                     }
-                    .swipeActions {
-                        Button {
-                            editing = v
-                        } label: {
-                            Label("Modifier", systemImage: "pencil")
-                        }
-                        .tint(.orange)
-                        Button(role: .destructive) {
-                            if let idx = store.toBuy.firstIndex(where: { $0.id == v.id }) {
-                                store.deleteToBuy(at: IndexSet(integer: idx))
-                            }
-                        } label: {
-                            Label("Supprimer", systemImage: "trash")
-                        }
-                    }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
-                .onDelete(perform: store.deleteToBuy)
             }
             .navigationTitle("À acheter")
             .searchable(text: $searchText, prompt: "Rechercher une annonce")
@@ -80,13 +80,192 @@ struct PurchasesView: View {
                 }
                 .presentationDetents([.medium, .large])
             }
+            .background {
+                LinearGradient(
+                    colors: [
+                        Color(uiColor: .systemBackground),
+                        Color(uiColor: .secondarySystemBackground)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            }
         }
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 88, height: 88)
+                Image(systemName: "cart.badge.plus")
+                    .font(.system(size: 36, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.white.opacity(0.1), lineWidth: 1)
+            }
+
+            Text("Aucune annonce")
+                .font(.title3.weight(.semibold))
+
+            Text("Ajoutez une annonce pour suivre vos futurs achats.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            StyledButton(title: "Ajouter une annonce", systemImage: "plus") {
+                showAdd = true
+            }
+            .padding(.top, 8)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
+    }
+}
+
+private struct PurchaseRowCard: View {
+    let v: VehicleToBuy
+
+    var body: some View {
+        HStack(spacing: 12) {
+            thumb
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(.white.opacity(0.08), lineWidth: 0.8)
+                        .blendMode(.overlay)
+                }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(v.name)
+                    .font(.headline)
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    if let price = v.price?.currencyString {
+                        Pill(systemImage: "tag", text: price)
+                    }
+                    if let url = v.listingURL, let u = URL(string: url) {
+                        LinkPill(systemImage: "link", text: "Annonce", url: u)
+                    }
+                }
+                .lineLimit(1)
+            }
+
+            Spacer()
+        }
+        .padding(12)
+        .background {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(accentGradient.opacity(0.10).blendMode(.plusLighter))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .strokeBorder(.white.opacity(0.10), lineWidth: 1)
+                }
+        }
+        .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .hoverEffect(.highlight)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var thumb: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.regularMaterial)
+
+            if let img = v.photos.first?.image {
+                img
+                    .resizable()
+                    .scaledToFill()
+                    .clipped()
+            } else {
+                Image(systemName: "car.fill")
+                    .font(.system(size: 24, weight: .regular))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var accentGradient: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.accentColor.opacity(0.25),
+                Color.accentColor.opacity(0.05)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+}
+
+private struct Pill: View {
+    let systemImage: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+                .imageScale(.small)
+                .foregroundStyle(.secondary)
+            Text(text)
+                .font(.footnote.weight(.semibold))
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background {
+            Capsule(style: .continuous)
+                .fill(.thinMaterial)
+                .overlay {
+                    Capsule(style: .continuous)
+                        .strokeBorder(.white.opacity(0.08), lineWidth: 0.8)
+                        .blendMode(.overlay)
+                }
+        }
+    }
+}
+
+private struct LinkPill: View {
+    let systemImage: String
+    let text: String
+    let url: URL
+
+    var body: some View {
+        Link(destination: url) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .imageScale(.small)
+                    .foregroundStyle(.secondary)
+                Text(text)
+                    .font(.footnote.weight(.semibold))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background {
+                Capsule(style: .continuous)
+                    .fill(.thinMaterial)
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .strokeBorder(.white.opacity(0.08), lineWidth: 0.8)
+                            .blendMode(.overlay)
+                    }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 
 private struct PurchaseDetailView: View {
     @EnvironmentObject private var store: GarageStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
     let item: VehicleToBuy
 
@@ -113,23 +292,38 @@ private struct PurchaseDetailView: View {
                 .padding(.horizontal)
 
                 GroupBox {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Notes").font(.headline)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Notes")
+                            .font(.headline)
                         Text(currentItem.notes.isEmpty ? "—" : currentItem.notes)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 2)
                 }
                 .padding(.horizontal)
 
                 if let url = currentItem.listingURL, let u = URL(string: url) {
-                    HStack {
-                        Image(systemName: "link")
-                        Link("Ouvrir l’annonce", destination: u)
-                        Spacer()
+                    HStack(spacing: 12) {
+                        Button {
+                            openURL(u)
+                        } label: {
+                            Label("Ouvrir l’annonce", systemImage: "arrow.up.right.square")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        ShareLink(item: u) {
+                            Label("Partager", systemImage: "square.and.arrow.up")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .buttonStyle(.bordered)
                     }
                     .padding(.horizontal)
                 }
             }
+            .padding(.bottom, 24)
         }
         .navigationTitle(currentItem.name)
         .navigationBarTitleDisplayMode(.inline)

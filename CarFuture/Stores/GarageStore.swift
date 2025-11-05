@@ -10,8 +10,61 @@ import CarFuturePackage
 
 @MainActor
 final class GarageStore: ObservableObject {
-    @Published var vehicles: [Vehicle] = SampleData.vehicles
-    @Published var toBuy: [VehicleToBuy] = SampleData.toBuy
+    @Published var vehicles: [Vehicle] = [] {
+        didSet { persist() }
+    }
+    @Published var toBuy: [VehicleToBuy] = [] {
+        didSet { persist() }
+    }
+
+    private static let saveURL: URL = {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return dir.appendingPathComponent("garageStore.json")
+    }()
+
+    private struct PersistedData: Codable {
+        let vehicles: [Vehicle]
+        let toBuy: [VehicleToBuy]
+    }
+
+    init() {
+        #if targetEnvironment(simulator)
+        self.vehicles = SampleData.vehicles
+        self.toBuy = SampleData.toBuy
+        #else
+        if let loaded = Self.loadFromDisk() {
+            self.vehicles = loaded.vehicles
+            self.toBuy = loaded.toBuy
+        } else {
+            self.vehicles = []
+            self.toBuy = []
+        }
+        #endif
+    }
+
+    private static func loadFromDisk() -> PersistedData? {
+        do {
+            let data = try Data(contentsOf: saveURL)
+            let decoder = JSONDecoder()
+            return try decoder.decode(PersistedData.self, from: data)
+        } catch {
+            return nil
+        }
+    }
+
+    private func persist() {
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted]
+            let payload = PersistedData(vehicles: vehicles, toBuy: toBuy)
+            let data = try encoder.encode(payload)
+            try data.write(to: Self.saveURL, options: [.atomic])
+        } catch {
+            #if DEBUG
+            print("GarageStore persist error:", error)
+            #endif
+        }
+    }
 
     func addVehicle(_ vehicle: Vehicle) {
         withAnimation { vehicles.append(vehicle) }
@@ -67,7 +120,7 @@ enum SampleData {
                 characteristics: .init(weightKg: 980, seats: 2, horsepower: 181, torqueNm: 205, year: 2020),
                 wishlist: [PartItem(name: "Ligne Inox", url: nil, price: 899.0),
                            PartItem(name: "Jantes 17\"", url: nil, price: 1200.0)]),
-        
+
         Vehicle(type: .motorcycle, name: "Kawasaki Z900",
                 photos: [],
                 characteristics: .init(weightKg: 210, seats: 2, horsepower: 125, torqueNm: 98, year: 2020),
@@ -110,49 +163,47 @@ enum SampleData {
                            PartItem(name: "Kit Turbo Performance", url: nil, price: 4500.0)]),
     ]
 
-
     static let toBuy: [VehicleToBuy] = [
         VehicleToBuy(type: .car, name: "Toyota GR Yaris",
                      listingURL: "https://example.com/gryaris",
                      price: 32500,
                      notes: "Voir l’historique d’entretien, vérifier pneus."),
-        
+
         VehicleToBuy(type: .car, name: "Nissan 370Z",
                      listingURL: "https://example.com/370z",
                      price: 29900,
                      notes: "Contrôler l’état des suspensions, vérifier les freins."),
-        
+
         VehicleToBuy(type: .car, name: "BMW M2 Competition",
                      listingURL: "https://example.com/bmw_m2",
                      price: 55000,
                      notes: "Vérifier les antécédents d’accidents, tester la boîte de vitesses."),
-        
+
         VehicleToBuy(type: .car, name: "Honda Civic Type R",
                      listingURL: "https://example.com/civic_type_r",
                      price: 35000,
                      notes: "Contrôler la carrosserie pour des bosses, vérifier l’usure des pneus."),
-        
+
         VehicleToBuy(type: .car, name: "Audi RS3",
                      listingURL: "https://example.com/audi_rs3",
                      price: 59000,
                      notes: "Vérifier l’historique d’entretien, inspecter les plaquettes de frein."),
-        
+
         VehicleToBuy(type: .car, name: "Porsche Cayman S",
                      listingURL: "https://example.com/porsche_cayman_s",
                      price: 49900,
                      notes: "S’assurer qu’il n’y a pas de fuites d’huile, tester le moteur."),
-        
+
         VehicleToBuy(type: .car, name: "Subaru BRZ",
                      listingURL: "https://example.com/subaru_brz",
                      price: 28000,
                      notes: "Vérifier le système de refroidissement, inspecter les suspensions."),
-        
+
         VehicleToBuy(type: .car, name: "Mercedes-Benz A45 AMG",
                      listingURL: "https://example.com/mercedes_a45_amg",
                      price: 67000,
                      notes: "Vérifier l’historique d’entretien, tester les amortisseurs.")
     ]
-
 }
 
 extension Double {
