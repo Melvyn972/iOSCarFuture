@@ -6,9 +6,9 @@
 //
 import Foundation
 
-enum VehicleType: String, CaseIterable, Identifiable, Codable {
+public enum VehicleType: String, CaseIterable, Identifiable, Codable {
     case car = "Voiture"
     case motorcycle = "Moto"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 }

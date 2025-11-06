@@ -5,21 +5,20 @@
 //  Created by THIERRY-BELLEFOND Melvyn on 04/11/2025.
 //
 import Foundation
-import CarFuturePackage
 
-struct Vehicle: Identifiable, Codable, Hashable {
-    let id: UUID
-    var type: VehicleType
-    var name: String
-    var photos: [PhotoAsset]
-    var characteristics: Characteristics
-    var wishlist: [PartItem]
+public struct Vehicle: Identifiable, Codable, Hashable {
+    public let id: UUID
+    public var type: VehicleType
+    public var name: String
+    public var photos: [PhotoAssetCarFuture]
+    public var characteristics: Characteristics
+    public var wishlist: [PartItem]
 
-    init(
+    public init(
         id: UUID = UUID(),
         type: VehicleType,
         name: String,
-        photos: [PhotoAsset] = [],
+        photos: [PhotoAssetCarFuture] = [],
         characteristics: Characteristics = .init(),
         wishlist: [PartItem] = []
     ) {
@@ -31,5 +30,5 @@ struct Vehicle: Identifiable, Codable, Hashable {
         self.wishlist = wishlist
     }
 
-    var wishlistTotal: Double { wishlist.totalCost }
+    public var wishlistTotal: Double { wishlist.totalCost }
 }

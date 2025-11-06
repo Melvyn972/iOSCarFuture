@@ -6,6 +6,8 @@
 //
 import SwiftUI
 import PhotosUI
+import CarFuturePackage
+
 
 struct PurchaseEditorView: View {
     var existing: VehicleToBuy?
@@ -21,7 +23,7 @@ struct PurchaseEditorView: View {
     @State private var notes: String = ""
 
     @State private var pickerItems: [PhotosPickerItem] = []
-    @State private var photos: [PhotoAsset] = []
+    @State private var photos: [PhotoAssetCarFuture] = []
 
     var body: some View {
         NavigationStack {
@@ -126,7 +128,7 @@ struct PurchaseEditorView: View {
             }
             .task(id: pickerItems) {
                 guard !pickerItems.isEmpty else { return }
-                var loaded: [PhotoAsset] = photos
+                var loaded: [PhotoAssetCarFuture] = photos
                 for item in pickerItems {
                     if let data = try? await item.loadTransferable(type: Data.self) {
                         loaded.append(.init(data: data))

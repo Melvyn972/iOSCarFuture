@@ -5,6 +5,7 @@
 //  Created by THIERRY-BELLEFOND Melvyn on 04/11/2025.
 //
 import SwiftUI
+import CarFuturePackage
 
 private enum WishlistTab: String, CaseIterable, Identifiable {
     case parts = "Pièces"

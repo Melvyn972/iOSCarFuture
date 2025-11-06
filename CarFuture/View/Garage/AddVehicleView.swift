@@ -22,7 +22,7 @@ struct AddVehicleView: View {
     @State private var year: Int?
 
     @State private var pickerItems: [PhotosPickerItem] = []
-    @State private var photos: [PhotoAsset] = []
+    @State private var photos: [PhotoAssetCarFuture] = []
 
     var body: some View {
         NavigationStack {
@@ -80,7 +80,7 @@ struct AddVehicleView: View {
                 }
             }
             .task(id: pickerItems) {
-                var loaded: [PhotoAsset] = []
+                var loaded: [PhotoAssetCarFuture] = []
                 for item in pickerItems {
                     if let data = try? await item.loadTransferable(type: Data.self) {
                         loaded.append(.init(data: data))

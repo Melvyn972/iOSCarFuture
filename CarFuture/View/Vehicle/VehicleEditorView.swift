@@ -4,10 +4,9 @@
 //
 //  Created by THIERRY-BELLEFOND Melvyn on 05/11/2025.
 //
-
-
 import SwiftUI
 import PhotosUI
+import CarFuturePackage
 
 struct VehicleEditorView: View {
     let vehicle: Vehicle
@@ -23,7 +22,7 @@ struct VehicleEditorView: View {
     @State private var torque: Int?
     @State private var year: Int?
     @State private var pickerItems: [PhotosPickerItem] = []
-    @State private var photos: [PhotoAsset]
+    @State private var photos: [PhotoAssetCarFuture]
 
     init(vehicle: Vehicle, onSave: @escaping (Vehicle) -> Void) {
         self.vehicle = vehicle
@@ -102,7 +101,7 @@ struct VehicleEditorView: View {
             }
             .task(id: pickerItems) {
                 guard !pickerItems.isEmpty else { return }
-                var loaded: [PhotoAsset] = []
+                var loaded: [PhotoAssetCarFuture] = []
                 for item in pickerItems {
                     if let data = try? await item.loadTransferable(type: Data.self) {
                         loaded.append(.init(data: data))

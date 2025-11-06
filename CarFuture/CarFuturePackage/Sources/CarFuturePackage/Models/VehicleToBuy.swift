@@ -5,26 +5,25 @@
 //  Created by THIERRY-BELLEFOND Melvyn on 04/11/2025.
 //
 import Foundation
-import CarFuturePackage
 
-struct VehicleToBuy: Identifiable, Codable, Hashable {
-    let id: UUID
-    var type: VehicleType
-    var name: String
-    var listingURL: String?
-    var price: Double?
-    var photos: [PhotoAsset]
-    var notes: String
-    var characteristics: Characteristics
-    var plannedParts: [PartItem]
+public struct VehicleToBuy: Identifiable, Codable, Hashable {
+    public let id: UUID
+    public var type: VehicleType
+    public var name: String
+    public var listingURL: String?
+    public var price: Double?
+    public var photos: [PhotoAssetCarFuture]
+    public var notes: String
+    public var characteristics: Characteristics
+    public var plannedParts: [PartItem]
 
-    init(
+    public init(
         id: UUID = UUID(),
         type: VehicleType,
         name: String,
         listingURL: String? = nil,
         price: Double? = nil,
-        photos: [PhotoAsset] = [],
+        photos: [PhotoAssetCarFuture] = [],
         notes: String = "",
         characteristics: Characteristics = .init(),
         plannedParts: [PartItem] = []
@@ -40,5 +39,5 @@ struct VehicleToBuy: Identifiable, Codable, Hashable {
         self.plannedParts = plannedParts
     }
 
-    var plannedTotal: Double { plannedParts.totalCost + (price ?? 0) }
+    public var plannedTotal: Double { plannedParts.totalCost + (price ?? 0) }
 }
